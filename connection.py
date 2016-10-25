@@ -5,7 +5,5 @@ conn = pymysql.connect(host='66.175.208.103',\
 						  passwd='nT2K64bwHB!UR+4JR%P%S?5rYMcZJkw&',
 						  db='Test')
 cursor = conn.cursor()
-cursor.execute("""SELECT * from person""")
-
-for data in cursor.fetchall():
-	pprint(data)
+cursor.execute("""CALL Test.create_character('{}')""".format("BOb") )
+conn.commit()
