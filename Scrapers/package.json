@@ -1,0 +1,15 @@
+{
+  "name": "dungeons_and_stuff",
+  "version": "1.0.0",
+  "description": "Dungeon and Cities and other stuff which will be scraped",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Egor Kozitski",
+  "license": "MIT",
+  "dependencies": {
+    "cheerio": "^0.22.0",
+    "request": "^2.76.0"
+  }
+}
