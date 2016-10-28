@@ -13,4 +13,4 @@ class Character():
 										.format(character_name))
 		self.connection.conn.commit()
 
-
+	
