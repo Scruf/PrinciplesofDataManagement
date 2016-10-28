@@ -4,6 +4,7 @@ class Monster():
     def __init__(self):
         self.connection = Connection()
 
+    #fetches all monsters currently in DB, returns dictionary
     def fetch_monsters(self, dungeon_level):
         self.connection.cursor.execute("""CALL Test.fetch_monsters('{}')""".format(dungeon_level))
         self.connection.conn.commit()

@@ -14,7 +14,6 @@ class Dungeon():
 				player's level
 		@param player_level is the player name
 	"""
-
 	def create_dungeon(self,level):
 		with open('dungeon.json') as data:
 			dungeon_names = json.load(data)
@@ -27,10 +26,23 @@ class Dungeon():
 		self.connection.cursor.execute("""CALL Test.create_dungeon('{}','{}')"""
 										.format(dungeon_obj['difficulty_level']
 												,dungeon_obj['name']))
-		
-
-
 		self.connection.conn.commit()
+
+	#Gets list of dungeons currently in DB
+	def get_dungeons(self):
+		self.connection.cursor.execute("""SELECT dungeon_name, difficulty_level FROM Dungeon;""")
+		self.connection.conn.commit()
+
+		key_list = []
+		for description in self.connection.cursor.description:
+			key_list.append(str(description[0]))
+
+		results = []
+		for data in self.connection.cursor.fetchall():
+			dictionary = dict(zip(key_list, list(data)))
+			results.append(dictionary)
+
+		return results
 
 	
 
