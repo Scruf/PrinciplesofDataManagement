@@ -43,7 +43,7 @@ class Dungeon():
 	"""
 
 	def create_dungeon(self, level):
-		with open('dungeon.json') as data:
+		with open('dungeon_names.json') as data:
 			dungeon_names = json.load(data)
 
 		random_dungeon = randint(0, len(dungeon_names) - 1)
