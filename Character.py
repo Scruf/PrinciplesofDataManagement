@@ -19,6 +19,6 @@ class Character():
 
 		results = []
 		for data in self.connection.cursor.fetchall():
-			results.append(data)
+			results.append(data[0])
 
 		return results
