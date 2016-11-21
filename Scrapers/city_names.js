@@ -10,7 +10,8 @@ function nameGen(){
 	
 	
 	var names
-	for(i = 0; i < 10; i++){
+	var names_list = []
+	for(i = 0; i < 1000; i++){
 		if(i < 3){
 			rnd0 = Math.floor(Math.random() * names1.length);
 			rnd1 = Math.floor(Math.random() * names2.length);
@@ -38,7 +39,11 @@ function nameGen(){
 			rnd4 = Math.floor(Math.random() * names6.length);
 			names = names1[rnd0] + names2[rnd1] + names3[rnd2] + names4[rnd3] + names6[rnd4];
 		}
+
+		names_list.push({'name':names});
 	}
-	console.log(names.toUpperCase());
+	return names_list;
+	
 }
-nameGen()
+var fs = require('fs');
+fs.writeFile('city.json', JSON.stringify(nameGen(),null,4),'utf-8');
