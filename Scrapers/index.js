@@ -29,4 +29,4 @@ function nameGen(){
 }
 var dungeon_names = nameGen();
 var fs = require('fs');
-fs.writeFileSync('data.json', JSON.stringify(dungeon_names), 'utf-8');
+fs.writeFileSync('data.json', JSON.stringify(dungeon_names, null,4), 'utf-8');
