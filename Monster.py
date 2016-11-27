@@ -1,6 +1,7 @@
 from Connection import Connection
 
-class Monster():
+
+class Monster:
     def __init__(self):
         self.connection = Connection()
 
