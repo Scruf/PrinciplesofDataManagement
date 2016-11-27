@@ -52,7 +52,7 @@ class Loot:
             else:
                 reward_amnt = randint(150,225)
         elif loot_rarity == "Common":
-            if loot_type == "Battle item":
+            if loot_type == "Battle Item":
                 reward_amnt = 3
 
         return reward_amnt
@@ -66,7 +66,7 @@ class Loot:
             if type_roll <= 33:
                 reward_type = "Currency"
             elif 33 < type_roll <= 66:
-                reward_type = "Battle item"
+                reward_type = "Battle Item"
             elif 66 < type_roll <= 85:
                 reward_type = "Armor"
             else:
@@ -75,7 +75,7 @@ class Loot:
             if type_roll <= 50:
                 reward_type = "Currency"
             elif 50 < type_roll <= 70:
-                reward_type = "Battle item"
+                reward_type = "Battle Item"
             elif 70 < type_roll <= 85:
                 reward_type = "Armor"
             else:
@@ -84,7 +84,7 @@ class Loot:
             if type_roll <= 75:
                 reward_type = "Currency"
             elif 75 < type_roll <= 90:
-                reward_type = "Battle item"
+                reward_type = "Battle Item"
             elif 90 < type_roll <= 95:
                 reward_type = "Armor"
             else:
