@@ -61,6 +61,13 @@ class Loot:
         reward_type = ""
         type_roll = randint(0,100)
         reward_rarity = Loot.get_drop_rarity()
+        if reward_context  == "Legendary":
+            legendary  = []
+            with open('loot.json') as data:
+                legendary = json.load(data)
+
+            legendary_item = legendary[randint(0,len(legendary))]
+            
 
         if reward_context == "Monster drop":
             if type_roll <= 33:
