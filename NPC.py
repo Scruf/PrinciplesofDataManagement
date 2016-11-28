@@ -21,7 +21,7 @@ class NPC():
 
 		return npc_list[randint(0,len(npc_list))]
 
-	def create_npc(self, building_id):
+	def create_npc(self, building_id, location_id):
 		with open('npc_names.json') as data:
 			npc_names = json.load(data)
 
@@ -49,10 +49,9 @@ class NPC():
 			function = 'Healer'
 		fullName = name + " the " + function
 
-		#CANT GET THIS TO WORK
-		# self.connection.cursor.execute("""INSERT INTO `NPC`(npc_name, npc_function, location_id, building_id)
-  #   									VALUES({}, {}, {}, {});""".format(1, fullName, typeStr, building_id))
-		# self.connection.conn.commit()
+		self.connection.cursor.execute("""INSERT INTO `NPC`(npc_name, npc_function, location_id, building_id)
+    									VALUES('{}', '{}', {}, {});""".format(fullName, typeStr, location_id, building_id))
+		self.connection.conn.commit()
 
 
 
@@ -61,10 +60,11 @@ class NPC():
 	@method creates a quest with the given location
 	        id, and info about the character
 	"""
-	def create_quest(self, loc_id, character):
+	def create_quest(self, loc_id, player_id):
 		dungeonInst = Dungeon()
-		level = character.get_char_level(18)
-		dung_id = dungeonInst.create_dungeon(level)
+		charInst = Character()
+		level = charInst.get_char_level(18)
+		dung_id = dungeonInst.create_dungeon(level, loc_id, player_id)
 		reward = randint(50, 200)
 		typeInt = randint(1, 3)
 		#set the type

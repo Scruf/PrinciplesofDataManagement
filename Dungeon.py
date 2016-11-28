@@ -9,6 +9,13 @@ class Dungeon:
 	def __init__(self):
 		self.connection = Connection()
 
+	def get_dungeon_id(self, name):
+		self.connection.cursor.execute("""SELECT id
+											FROM Test.Dungeon WHERE dungeon_name = '{}'"""
+											.format(name))
+		dungeon_id = self.connection.cursor.fetchall()[0][0]
+		print("DUNG ID: {}".format(dungeon_id))
+		return dungeon_id
 
 	#Gets list of dungeons currently in DB
 	def get_dungeons(self):
@@ -70,7 +77,7 @@ class Dungeon:
 									   .format(dungeon_obj['difficulty_level']
 											   , dungeon_obj['name']))
 		self.connection.conn.commit()
-		return self.get_dungeon(dungeon_obj['name'])
+		return self.get_dungeon_id(dungeon_obj['name'])
 
 
 if __name__ == '__main__':
