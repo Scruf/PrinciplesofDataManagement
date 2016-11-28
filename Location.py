@@ -29,18 +29,35 @@ class Location():
 				""".format(building, loc_id))
 
 			self.connection.conn.commit()
+	"""
+		@method get_current_location will retriece current location of the player
+				@param character_name is a name of the character for whom curent location
+										will be retrieced 
+	"""
+	def get_current_location(self,character_name):
+		self.connection.cursor.execute("""SELECT curr_location_id
+										  FROM Test.Character
+										  WHERE character_name = '{}'""".format(character_name)
+		)
+		self.connection.conn.commit()
+		location_id =  self.connection.cursor.fetchone()[0]
+		return int(location_id)
 
-	
-	
+	"""
+		@method random_town_name() will return random town name
+	"""
 	def random_town_name(self):
 		town_names = []
 		with open('city.json') as data:
 			town_names = json.load(data)
 		return town_names[randint(0,len(town_names)-1)]['name']
 
-
+	"""
+		@method get_player_id(character_name) will return the player id
+			@param character_name  will return the player id
+	"""
 	def get_player_id(self,character_name):
-		characrer_query = """SELECT player_id
+		characrer_query = """	SELECT player_id
 								 FROM Test.Character
 								 WHERE character_name = '{}'""".format(
 								 	character_name
@@ -49,7 +66,11 @@ class Location():
 		self.connection.conn.commit()
 		return self.connection.cursor.fetchone()[0]
 
-
+	"""
+		@method get_location(character_name) will drop player to a new location
+				@param character_name is characte_name is character name which will
+					be droped in the game
+	"""
 	def get_location(self,character_name):
 		#Execute the query
 
@@ -144,6 +165,50 @@ class Location():
 
 			return town_obj
 
+	# new towns get_new_towns will generate new locations
+	def get_new_towns(self, character_name):
+		#get player id
+		player_id = self.get_player_id(character_name)
+		#get visited towns
+		visited_town_query = """SELECT location_name
+						   FROM Test.Location
+						   WHERE character_id = '{}'""".format(
+						   	player_id
+		)
+		#execute town_query
+		self.connection.cursor.execute(visited_town_query)
+		self.connection.conn.commit()
+		#fetch visited city if any
+		visited = []
+
+		for city in self.connection.cursor.fetchall():
+			visited.append(city[0])
+		town_types  = ['Town','City','Village','Hamlet']
+		new_towns = []
+
+		for i in range(0,4):
+			town_obj = {
+				"city_name":str(self.random_town_name()).capitalize(),
+				"city_type":town_types[randint(0,len(town_types)-1)],
+				"discovered_from_id":self.get_current_location(character_name)
+			}
+
+			new_towns.append(town_obj)
+			#new town query string
+			new_town_query = """INSERT INTO Test.Location(location_name,
+														  location_type,
+														  discovered_from_id,
+														  'location_limit',
+														  character_id) VALUES(
+									'{}','{}','{}','{}','{}'
+								)""".format(
+										town_obj['city_name'],town_obj['city_type'],randint(2,8),
+										town_obj['discovered_from_id'],self.get_player_id(character_name)
+								)
+			self.connection.cursor.execute(new_town_query)
+			self.connection.conn.commit()
+
+		return new_towns
 
 	#get_building_names will retrieve all building name based on the location_id
 	def get_building_names(self,location_id):
@@ -165,12 +230,50 @@ class Location():
 			building_name.append(self.connection.cursor.fetchone()[0])
 
 		return building_name
+	"""
+		@method def go_to(location_name,player_id) will move player to the location of the player
+				@param location_name is the location name where player wants to go
+				@param player_id is the id of the player  
+					
+	"""
 
+	def go_to(self,location_name,player_id):
+		#create location query to retriece location id
+		location_id_query =  """SELECT location_id 
+								FROM Test.Location
+								WHERE location_name = '{}'
+								AND character_id = '{}'""".format(
+									location_name,player_id
+								)
+		#execute the location query
+		self.connection.cursor.execute(location_id_query)
+		self.connection.conn.commit()
+		#retrieve location id from the query
+		location_id = self.connection.cursor.fetchone()[0]
+		#update location query
+		update_location = """CALL Test.update_location('{}','{}')""".format(
+			location_id,player_id
+		)
+		self.connection.cursor.execute(update_location)
+		self.connection.conn.commit()
+		player_name_query = """SELECT character_name
+						 FROM Test.Character
+						 WHERE player_id = '{}'""".format(
+						 	player_id
+						 )
 
+		self.connection.cursor.execute(player_name_query)
+		self.connection.conn.commit()
+		
+		character_name = self.connection.cursor.fetchone()[0]
+		#populate town
+		self.populate(location_id)
+		#return that city description
+		return self.get_location(character_name)
 
 
 
 if __name__ == '__main__':
 	location = Location()
-	print(location.get_location('Shalimar'))
+	print(location.go_to('Ejuboria','11'))
 	
