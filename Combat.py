@@ -1,6 +1,7 @@
 from Connection import Connection
 from Character import Character
 from Monster import Monster
+from Loot import Loot
 from random import randint
 from tabulate import tabulate
 
@@ -123,6 +124,27 @@ class Combat:
                 choice = input ("Select: ")
                 choiceInt = int(choice)
                 itemChoice = loot[choiceInt]
+
+                #decrement quantity of item
+                newQuant = itemChoice['quantity'] - 1
+                if newQuant == 0:
+                    #drop item from table
+                    self.connection.cursor.execute("""DELETE FROM Character_loot
+                                WHERE Character_loot.loot_id IN
+                                (SELECT loot_id FROM Loot WHERE loot_name='{}')
+                                AND Character_loot.player_id = {}"""
+                                .format(itemChoice['loot_name'], player_id))
+                    self.connection.conn.commit
+                else:
+                    self.connection.cursor.execute("""
+                        UPDATE Character_loot
+                        SET quantity={}
+                        WHERE Character_loot.loot_id IN
+                              (SELECT loot_id FROM Loot WHERE loot_name='{}')
+                        AND Character_loot.player_id = {}"""
+                        .format(newQuant, itemChoice['loot_name'], player_id))
+                    self.connection.conn.commit()
+
                 print("\nYou chose: {}\n".format(itemChoice['loot_name']))
                 #defense modifier
                 if (itemChoice['defense_modifier'] > 0):
@@ -225,6 +247,16 @@ class Combat:
                     self.connection.conn.commit()
                 else:
                     print("\nThe monster missed!\n")
+            else:
+                #give reward
+                lootInst = Loot()
+                reward = {}
+                reward = lootInst.determine_reward(player_id, "Monster drop")
+                for key in reward:
+                    self.connection.cursor.execute("""SELECT loot_name FROM Loot WHERE loot_id = {}"""
+                                            .format(key))
+                    loot_name = self.connection.cursor.fetchall()[0][0]
+                    print("\nYou've received a {}. {} of them!".format(loot_name, reward[key]))
 
             if defend:
                 self.connection.cursor.execute(
