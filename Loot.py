@@ -8,7 +8,7 @@ class Loot:
 
     #fetches all loot of a certain rarity and type
     def fetch_loot(self, loot_rarity, loot_type):
-        self.connection.cursor.execute("""CALL Test.fetch_loot('{}')""".format(loot_rarity, loot_type))
+        self.connection.cursor.execute("""CALL Test.fetch_loot('{}', '{}')""".format(loot_rarity, loot_type))
         self.connection.conn.commit()
 
         key_list = []
@@ -57,7 +57,7 @@ class Loot:
 
         return reward_amnt
 
-    def determine_reward(self, reward_context):
+    def determine_reward(self, player_id, reward_context):
         reward_type = ""
         type_roll = randint(0,100)
         reward_rarity = Loot.get_drop_rarity()
@@ -99,8 +99,13 @@ class Loot:
 
         reward_amt = Loot.determine_reward_amount(reward_rarity, reward_type)
         all_possible_loot = Loot.fetch_loot(self, reward_rarity, reward_type)
-        random_loot = choice(all_possible_loot)
+        random_loot_id = choice(all_possible_loot)
 
-        reward = dict({random_loot: reward_amt})
+        reward = dict({random_loot_id: reward_amt})
+
+        #Add reward to inventory
+        self.connection.cursor.execute("""CALL Test.add_to_inventory('{}', '{}', '{}')"""
+                                       .format(player_id, random_loot_id, reward_amt))
+        self.connection.conn.commit()
 
         return reward
