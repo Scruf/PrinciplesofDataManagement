@@ -14,7 +14,6 @@ class Dungeon:
 											FROM Test.Dungeon WHERE dungeon_name = '{}'"""
 											.format(name))
 		dungeon_id = self.connection.cursor.fetchall()[0][0]
-		print("DUNG ID: {}".format(dungeon_id))
 		return dungeon_id
 
 	#Gets list of dungeons currently in DB
