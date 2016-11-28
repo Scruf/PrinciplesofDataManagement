@@ -21,7 +21,7 @@ class NPC():
 
 		return npc_list[randint(0,len(npc_list))]
 
-	def create_npc(self, building_id, location_id):
+	def create_npc(self, player_id, building_id, location_id):
 		with open('npc_names.json') as data:
 			npc_names = json.load(data)
 
@@ -53,6 +53,17 @@ class NPC():
     									VALUES('{}', '{}', {}, {});""".format(fullName, typeStr, location_id, building_id))
 		self.connection.conn.commit()
 
+		print("Upon entering the {} you see someone working hard. You approach them\n".format(typeStr))
+		print("\"Hello, I'm {}. I've got a problem can you handle it?\"\n".format(fullName))
+		choice = input("(Y/N) ")
+		if choice == 'Y' or choice == 'y':
+			#create quest
+			description = self.create_quest(location_id, player_id)
+			print("\"I need you to {}\"\n".format(description))
+			print("Quest added to your quest log!")
+		else:
+			print("OK then out ya go!\n")
+			#have player choose where to go next
 
 
 
@@ -83,9 +94,20 @@ class NPC():
 		else:
 			experience = randint(1000, 3000)
 
-		self.connection.cursor.execute("""CALL Test.create_quest('{}','{}', '{}', '{}', '{}', '{}')"""
+		self.connection.cursor.execute("""CALL Test.create_quest('{}','{}', '{}', '{}', '{}', '{}', '{}')"""
 									   .format(reward, description, typeChar, loc_id, experience, dung_id))
 		self.connection.conn.commit()
+
+		self.connection.cursor.execute("""SELECT quest_id FROM Quest WHERE Quest.dungeon_id = {}""".format(dung_id))
+
+		quest_id = self.connection.cursor.fetchall()[0][0]
+
+		self.connection.cursor.execute("""INSERT INTO Quest_log (character_id, quest_id) VALUES ({}, {}))"""
+										.format(player_id, quest_id))
+
+		self.connection.conn.commit()
+
+		return description
 
 
 
