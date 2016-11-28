@@ -20,3 +20,12 @@ class Monster:
             results.append(dictionary)
 
         return results
+
+    def get_monst_attrs(self, monst_id):
+        self.connection.cursor.execute("""SELECT challenge_level, hitpoints, damage, defense FROM Test.Monster
+                                                    WHERE Test.Monster.monster_id =%s """, monst_id)
+        key_list = []
+        for description in self.connection.cursor.description:
+            key_list.append(str(description[0]))
+
+        return dict(zip(key_list, list(self.connection.cursor.fetchall()[0])))

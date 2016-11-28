@@ -2,13 +2,13 @@ from Connection import Connection
 import json
 from random import randint
 from pprint import pprint
+from Character import Character
+from Dungeon import Dungeon
 
 class NPC():
 
-
-
 	def __init__(self):
-		pass
+		self.connection = Connection()
 
 	"""
 		@method get_npc will return a random npc from the npc.json
@@ -21,8 +21,71 @@ class NPC():
 
 		return npc_list[randint(0,len(npc_list))]
 
+	def create_npc(self, building_id):
+		with open('npc_names.json') as data:
+			npc_names = json.load(data)
+
+		random_npc= randint(0, len(npc_names) - 1)
+		name = npc_names[random_npc]['name']
+
+		self.connection.cursor.execute("""SELECT Type FROM Test.Buildings
+													WHERE Test.Buildings.building_id = %s """, building_id)
+		typeStr = self.connection.cursor.fetchall()[0][0]
+		if (typeStr == 'BlackSmith'):
+			function = 'Blacksmith'
+		elif(typeStr == 'Tavern'):
+			function = 'Bartender'
+		elif (typeStr == 'Church'):
+			function = 'Priest'
+		elif (typeStr == 'Potion Shop'):
+			function = 'Potion Dealer'
+		elif (typeStr == 'Armor Shop'):
+			function = 'Armor Dealer'
+		elif (typeStr == 'Defense Shop'):
+			function = 'Defense Dealer'
+		elif (typeStr == 'Inn'):
+			function = 'Innkeeper'
+		elif (typeStr == 'Clinic'):
+			function = 'Healer'
+		fullName = name + " the " + function
+
+		#CANT GET THIS TO WORK
+		# self.connection.cursor.execute("""INSERT INTO `NPC`(npc_name, npc_function, location_id, building_id)
+  #   									VALUES({}, {}, {}, {});""".format(1, fullName, typeStr, building_id))
+		# self.connection.conn.commit()
 
 
+
+
+	"""
+	@method creates a quest with the given location
+	        id, and info about the character
+	"""
+	def create_quest(self, loc_id, character):
+		dungeonInst = Dungeon()
+		level = character.get_char_level(18)
+		dung_id = dungeonInst.create_dungeon(level)
+		reward = randint(50, 200)
+		typeInt = randint(1, 3)
+		#set the type
+		if (typeInt == 1):
+			typeChar = 'K'
+			description = "Kill all these monsters"
+		elif (typeInt == 2):
+			typeChar = 'F'
+			description = "Fetch an item for me"
+		elif (typeInt == 3):
+			typeChar = 'R'
+			description = "Rescue my buddy"
+		#set the experience
+		if (level < 5):
+			experience = randint(100, 800)
+		else:
+			experience = randint(1000, 3000)
+
+		self.connection.cursor.execute("""CALL Test.create_quest('{}','{}', '{}', '{}', '{}', '{}')"""
+									   .format(reward, description, typeChar, loc_id, experience, dung_id))
+		self.connection.conn.commit()
 
 
 
