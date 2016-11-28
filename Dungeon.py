@@ -4,8 +4,7 @@ import json
 from random import randint
 
 
-class Dungeon():
-
+class Dungeon:
 
 	def __init__(self):
 		self.connection = Connection()
@@ -42,11 +41,27 @@ class Dungeon():
 			@param player_level is the player name
 	"""
 
-	def create_dungeon(self, level):
+	def create_dungeon(self, level, originId, playerId):
 		with open('dungeon_names.json') as data:
 			dungeon_names = json.load(data)
 
 		random_dungeon = randint(0, len(dungeon_names) - 1)
+		dungeon_name = dungeon_names[random_dungeon]['name']
+
+		monsters = randint(2, 8)
+		location_obj = {
+			'loc_name': dungeon_name,
+			'loc_limit': monsters,
+			'loc_type': "Dungeon",
+			'discovered_from_id': originId,
+			'char_id': playerId
+		}
+
+		self.connection.cursor.execute("""CALL Test.add_location('{}', '{}', '{}', '{}', '{}')"""
+									   .format(location_obj['loc_name'], location_obj['loc_limit'], location_obj['loc_type'], location_obj['discovered_from_id'], location_obj['char_id'])
+									   )
+		self.connection.conn.commit()
+
 		dungeon_obj = {
 			'name': dungeon_names[random_dungeon]['name'],
 			'difficulty_level': level
