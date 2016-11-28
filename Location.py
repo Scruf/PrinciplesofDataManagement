@@ -71,6 +71,17 @@ class Location():
 				@param character_name is characte_name is character name which will
 					be droped in the game
 	"""
+	def get_player_name(self,player_id):
+		player_name_query = """SELECT character_name
+							   FROM Test.Character
+							   WHERE player_id  = '{}'""".format(
+							   player_id
+		)
+		self.connection.cursor.execute(player_name_query)
+		self.connection.conn.commit()
+		return self.connection.cursor.fetchone()[0]
+
+
 	def get_location(self,character_name):
 		#Execute the query
 
@@ -87,7 +98,7 @@ class Location():
 			character_id = self.get_player_id(character_name)
 			new_town = {
 				'location_type':town_types[randint(0,len(town_types)-1)],
-				'location_name':self.random_town_name(),
+				'location_name':str(self.random_town_name()).capitalize(),
 				'location_limit':randint(2,8),
 				'discovered_from':-1,
 				'character_id':character_id
@@ -171,10 +182,10 @@ class Location():
 		player_id = self.get_player_id(character_name)
 		#get visited towns
 		visited_town_query = """SELECT location_name
-						   FROM Test.Location
-						   WHERE character_id = '{}'""".format(
-						   	player_id
-		)
+						   		FROM Test.Location
+						   		WHERE character_id = '{}'""".format(
+						   		player_id
+							)
 		#execute town_query
 		self.connection.cursor.execute(visited_town_query)
 		self.connection.conn.commit()
@@ -198,12 +209,13 @@ class Location():
 			new_town_query = """INSERT INTO Test.Location(location_name,
 														  location_type,
 														  discovered_from_id,
-														  'location_limit',
+														  location_limit,
 														  character_id) VALUES(
 									'{}','{}','{}','{}','{}'
 								)""".format(
-										town_obj['city_name'],town_obj['city_type'],randint(2,8),
-										town_obj['discovered_from_id'],self.get_player_id(character_name)
+										town_obj['city_name'],town_obj['city_type'],
+										town_obj['discovered_from_id'],randint(2,8),
+										self.get_player_id(character_name)
 								)
 			self.connection.cursor.execute(new_town_query)
 			self.connection.conn.commit()
@@ -270,10 +282,75 @@ class Location():
 		self.populate(location_id)
 		#return that city description
 		return self.get_location(character_name)
+	"""
+	@method def leave(player_id,back) will allow player to move back and forth
+				@param back will determine wheter player wants to move back or forward
 
+	"""
+	def leave(self,player_id,back):
+		#if false than we are moving forward and the player
+		#will get new towns to go to 
+		if not back:
+			#first lets get current_loc
+			cur_loc = self.get_current_location(self.get_player_name(player_id))
 
+			#check whether this city has any discoveries 
+			#if not than call new cities
+			#otherwise display old city which were discovered from that city
+			discovered_query = """SELECT *
+								  FROM Test.Location
+								  WHERE discovered_from_id = '{}'""".format(
+								  	cur_loc
+								  )
+			self.connection.cursor.execute(discovered_query)
+			
+			self.connection.conn.commit()
+			
+			discovered_cities = []
+
+			for city in self.connection.cursor.fetchall():
+				city_obj = {
+					'city_name':city[1],
+					'city_type':city[3],
+					'discovered_from_id':city[4]
+				}
+				discovered_cities.append(city_obj)
+			#if the length is greater than 0 than it means we found some city previously discovered
+			if len(discovered_cities)>0:
+				return discovered_cities
+			else:
+				return self.get_new_towns(self.get_player_name(player_id))
+
+			#now lets find the cities were player was
+			# return self.get_new_towns(self.get_player_name(player_id))
+
+		else:
+			#We are moving backwards
+			prev_location = self.get_current_location(self.get_player_name(player_id))
+			#get back to the city 
+			#get discovered from
+			discovered_from_query ="""SELECT discovered_from_id
+								  	  FROM Test.Location
+								  	  WHERE location_id = '{}'""".format(prev_location)
+			self.connection.cursor.execute(discovered_from_query)
+			self.connection.conn.commit()
+			discovered_from_id = self.connection.cursor.fetchone()[0]
+
+			#update current location of the player to a previous location
+			go_back_query  = """CALL Test.update_location('{}','{}')""".format(
+				discovered_from_id,player_id
+			)
+			# print(go_back_query)
+			#execute update_location
+			self.connection.cursor.execute(go_back_query)
+			self.connection.conn.commit()
+			#return previous locatio 
+			return self.get_location(self.get_player_name(player_id))
+
+			
+			
 
 if __name__ == '__main__':
 	location = Location()
-	print(location.go_to('Ejuboria','11'))
+	print(location.leave('11',False))
 	
