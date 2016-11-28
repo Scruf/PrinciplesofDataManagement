@@ -96,4 +96,5 @@ class Loot:
 
         reward = dict({random_loot: reward_amt})
 
+        #add to inventory
         return reward
