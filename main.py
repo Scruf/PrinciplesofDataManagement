@@ -71,7 +71,7 @@ def start_options():
 
 
 '''Handles selection when calling generic menu items (map, quests, etc...)'''
-def menu_option(option_str, loc_name, loc_type, building_types):
+def menu_option(option_str, player_id, loc_name, loc_type, building_types):
     selection = option_str.lower()
 
     if selection == 'm' or selection == 'map':
@@ -82,7 +82,7 @@ def menu_option(option_str, loc_name, loc_type, building_types):
         print("Selected character inventory")
     elif selection == 'h' or selection == 'help':
         game_help()
-        location_options(loc_name, loc_type, building_types)
+        location_options(player_id, loc_name, loc_type, building_types)
     elif selection == 'e' or selection == 'exit':
         game_outro()
     else:
@@ -127,9 +127,10 @@ def location_options(player_id, loc_name, loc_type, building_types):
                 nearby_str += "{}) Go to {}\n".format((index + 1), town_name)
             nearby_str += "{}) Head back into {}\n".format((len(nearby_towns) + 1), loc_name)
             print(nearby_str)
-            travel_str = input("Selection: ")
-            travel_id = int(travel_str)
 
+            travel_str = input("Selection: ")
+            selection = travel_str
+            travel_id = int(travel_str)
             if travel_id <= len(nearby_towns):
                 dest_name = nearby_towns[travel_id-1]["city_name"]
 
@@ -140,9 +141,8 @@ def location_options(player_id, loc_name, loc_type, building_types):
             else:
                 dest_name = loc_name
                 location_options(player_id, dest_name, loc_type, building_types)
-
     except ValueError:
-        menu_option(selection, loc_name, loc_type, building_types)
+        menu_option(selection, player_id, loc_name, loc_type, building_types)
 
 game_intro()
 
