@@ -1,95 +1,109 @@
-from pprint import pprint
 from Connection import Connection
 from Character import Character
-from Dungeon import Dungeon
-from Monster import Monster
-import sys
 
 connection = Connection()
 
-# Choice between character creation or character selection for loading
-'''
-# Beginning of actual game, not part of the demo.
-print("\n\n=============================="
-	  "\nWelcome to the Dungeon Nights!\n"
-	  "==============================\n\n"
-	  "Please select one of the options to continue\n"
-	  "1. Create New Character\n"
-	  "2. Continue Game (UNDER DEVELOPMENT)")
+'''Reads from text file, greets the player'''
+def game_intro():
+    intro_file = open('welcome.txt', 'r')
+    print(intro_file.read())
+    intro_file.close()
+    start_options()
 
-#Instance of Character class
-characterInst = Character()
-option = input("Select: ")
-if option == "1":
-	character_name = input("Please enter name of the character (30 character limit): ")
-	characterInst.create_character(character_name)
-	print("Created " + character_name + "!")
-elif option == "2":
-	print("Under development...\n")
-	characters  = characterInst.fetch_characters()
-	for character in characters:
-		print(character)
-else:
-	print("If you can't follow directions, this game isn't for you."
-		  "\n\n=================================="
-		  "\nThanks for playing Dungeon Nights!"
-		  "\n==================================")
-	sys.exit(0)
-'''
+'''Reads from text file, says goodbye and closes program'''
+def game_outro():
+    outro_file = open('goodbye.txt', 'r')
+    print(outro_file.read())
+    outro_file.close()
 
+    quit()
 
-# Create dungeon method
-def createDungeon(level):
-    dungeon = dungeonInst.create_dungeon(level)
+'''Reads from help text file'''
+def game_help():
+    help_file = open('help.txt', 'r')
+    print(help_file.read())
+    help_file.close()
 
-    print("\nDungeons created:")
-    print("\tname: {}\n\tdifficulty: {}\n".format(dungeon["dungeon_name"], dungeon["difficulty_level"]))
-
-    showMonsters = input("\nShow monsters that could spawn in created dungeon? (Y/N): ")
-    if showMonsters[0].lower() == 'y':
-        # Instance of Monster class
-        monsterInst = Monster()
-        print("\nMonsters that may spawn in this dungeon:")
-        for monster in monsterInst.fetch_monsters(level):
-            print("\tname: {}\n\thitpoints: {}\n\tdamage: {}\n\tdefense: {}\n\tattack type: {}\n\tchallenge level: {}\n\t"
-                  "max loot dropped: {}\n".format(monster['monster_name'], monster['hitpoints'], monster['damage'],
-                                                monster['defense'], monster['attack_type'], monster['challenge_level'],
-                                                monster['max_loot']))
-        #pprint(monsterInst.fetch_monsters(level))
-
-
-# Demos dungeon creation options
-while True:
-    print("\nDemo of backend functionality\n"
-          "1. See players in the system currently\n"
-          "2. Create a new player.\n"
-          "3. See current dungeons in system\n"
-          "4. Create a new dungeon\n"
-          "5. Quit\n")
-
-    # Instance of Dungeon class
-    dungeonInst = Dungeon()
-    choice = input("Select: ")
+'''Puts the starting options out on the console, handles character creation/loading'''
+def start_options():
     characterInst = Character()
-    if choice == "1":
-        characters = characterInst.fetch_characters()
-        print("Characters in system:")
-        for character in characters:
-            print("\t"+character)
-    elif choice == "2":
-        character_name = input("Please enter name of the character (30 character limit): ")
+    start_str = input("1 ) Create New Character\n"
+                      "2 ) Load Character\n"
+                      "3 ) Quit\n\n"
+                      "Selection: ")
+
+    if start_str == "1":
+        character_name = input("Enter Character Name (30 character limit): ")
         characterInst.create_character(character_name)
-        print("Created " + character_name + "!")
-    elif choice == "3":
-        print("\nDungeons in DB:")
-        dungeons = dungeonInst.get_dungeons()
-        for dungeon in dungeons:
-            print("\tname: {}\n\tdifficulty: {}\n".format(dungeon["dungeon_name"],dungeon["difficulty_level"]))
-    elif choice == "4":
-        dungLvl = input("Enter dungeon level (1-5): ")
-        createDungeon(dungLvl)
-    elif choice == "5":
-        print("===================================\n"
-              "Thanks for testing out our backend!\n"
-              "===================================")
-        quit()
+        ### TODO Start character in new town
+
+    elif start_str == "2":
+        characters = characterInst.fetch_characters()
+        for character in characters:
+            print("\t" + character)
+        character_name = input("Enter Character Name: ")
+        if character_name in characters:
+            print("Loading character...\n")
+            ###TODO load character from database
+
+        else:
+            print("Character not found! Returning to options...")
+            start_options()
+    elif start_str == "3":
+        game_outro()
+
+
+'''Handles selection when calling generic menu items (map, quests, etc...)'''
+def menu_option(option_str):
+    selection = option_str.lower()
+
+    if selection == 'm' or selection == 'map':
+        print("Selected map option")
+    elif selection == 'q' or selection == 'quest':
+        print("Selected quest log option")
+    elif selection == 'i' or selection == 'inventory':
+        print("Selected character inventory")
+    elif selection == 'h' or selection == 'help':
+        game_help()
+    elif selection == 'e' or selection == 'exit':
+        game_outro()
+    else:
+        print("Oops, you entered in a bad command!\n"
+              "I guess if you can't follow directions, you should stop playing :(")
+        game_outro()
+
+
+'''Provides options to do once in a location'''
+def location_options(loc_name, loc_type, building_types):
+    desc_str = "You find yourself in the {} of {}.\nYou see".format(loc_type, loc_name)
+    opts_str = "[(M)ap] [(Q)uest] [(I)nventory] [(H)elp] [(E)xit]\n\n"
+
+    for index, building_type in enumerate(building_types):
+        if index > (len(building_types) - 1):
+            desc_str += " a {},".format(building_type)
+        elif index == (len(building_types) - 1):
+            desc_str += " and a {}.\nWhat do you do?\n\n".format(building_type)
+
+        opts_str += "{} ) {}\n".format((index + 1), building_type)
+
+    opts_str += "{} ) Leave {}\n\n".format((len(building_types)+1), loc_name)
+
+    print(desc_str)
+    print(opts_str)
+
+    selection = input("Selection: ")
+    try:
+        select_num = int(selection)
+        if select_num >= len(building_types):
+            bldg_type = building_types[select_num-1]
+            #TODO Go to bldg_type (like "Blacksmith")
+
+        else:
+            print("Selected option to leave {}".format(loc_name))
+            #TODO leave the location
+            
+    except ValueError:
+        menu_option(selection)
+
+game_intro()
+
