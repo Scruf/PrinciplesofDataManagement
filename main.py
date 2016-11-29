@@ -101,7 +101,7 @@ def location_options(loc_name, loc_type, building_types):
         else:
             print("Selected option to leave {}".format(loc_name))
             #TODO leave the location
-            
+
     except ValueError:
         menu_option(selection)
 
