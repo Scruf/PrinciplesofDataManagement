@@ -1,7 +1,10 @@
 from Connection import Connection
 from Character import Character
+from Location import Location
 
 connection = Connection()
+characterInst = Character()
+locationInst = Location()
 
 '''Reads from text file, greets the player'''
 def game_intro():
@@ -26,16 +29,23 @@ def game_help():
 
 '''Puts the starting options out on the console, handles character creation/loading'''
 def start_options():
-    characterInst = Character()
-    start_str = input("1 ) Create New Character\n"
-                      "2 ) Load Character\n"
-                      "3 ) Quit\n\n"
+    start_str = input("1) Create New Character\n"
+                      "2) Load Character\n"
+                      "3) Exit\n"
                       "Selection: ")
 
     if start_str == "1":
         character_name = input("Enter Character Name (30 character limit): ")
         characterInst.create_character(character_name)
-        ### TODO Start character in new town
+        character_id = characterInst.get_char_id(character_name)
+
+        townObj = locationInst.get_location(character_name)
+
+        locName = townObj["city_name"]
+        locType = townObj["town_description"]
+        bldgTypes = townObj["buildings"]
+
+        location_options(character_id, locName, locType, bldgTypes)
 
     elif start_str == "2":
         characters = characterInst.fetch_characters()
@@ -44,8 +54,15 @@ def start_options():
         character_name = input("Enter Character Name: ")
         if character_name in characters:
             print("Loading character...\n")
-            ###TODO load character from database
+            character_id = characterInst.get_char_id(character_name)
 
+            townObj = locationInst.get_location(character_name)
+
+            locName = townObj["city_name"]
+            locType = townObj["town_description"]
+            bldgTypes = townObj["buildings"]
+
+            location_options(character_id, locName, locType, bldgTypes)
         else:
             print("Character not found! Returning to options...")
             start_options()
@@ -54,7 +71,7 @@ def start_options():
 
 
 '''Handles selection when calling generic menu items (map, quests, etc...)'''
-def menu_option(option_str):
+def menu_option(option_str, loc_name, loc_type, building_types):
     selection = option_str.lower()
 
     if selection == 'm' or selection == 'map':
@@ -65,6 +82,7 @@ def menu_option(option_str):
         print("Selected character inventory")
     elif selection == 'h' or selection == 'help':
         game_help()
+        location_options(loc_name, loc_type, building_types)
     elif selection == 'e' or selection == 'exit':
         game_outro()
     else:
@@ -74,19 +92,20 @@ def menu_option(option_str):
 
 
 '''Provides options to do once in a location'''
-def location_options(loc_name, loc_type, building_types):
+def location_options(player_id, loc_name, loc_type, building_types):
+    loc_inst = Location()
     desc_str = "You find yourself in the {} of {}.\nYou see".format(loc_type, loc_name)
-    opts_str = "[(M)ap] [(Q)uest] [(I)nventory] [(H)elp] [(E)xit]\n\n"
+    opts_str = "[(M)ap] [(Q)uest] [(I)nventory] [(H)elp] [(E)xit]\n"
 
     for index, building_type in enumerate(building_types):
-        if index > (len(building_types) - 1):
+        if index < (len(building_types) - 1):
             desc_str += " a {},".format(building_type)
         elif index == (len(building_types) - 1):
-            desc_str += " and a {}.\nWhat do you do?\n\n".format(building_type)
+            desc_str += " and a {}.\nWhat do you do?\n".format(building_type)
 
-        opts_str += "{} ) {}\n".format((index + 1), building_type)
+        opts_str += "{}) Go to {}\n".format((index + 1), building_type)
 
-    opts_str += "{} ) Leave {}\n\n".format((len(building_types)+1), loc_name)
+    opts_str += "{}) Leave {}\n".format((len(building_types)+1), loc_name)
 
     print(desc_str)
     print(opts_str)
@@ -94,16 +113,36 @@ def location_options(loc_name, loc_type, building_types):
     selection = input("Selection: ")
     try:
         select_num = int(selection)
-        if select_num >= len(building_types):
+        if select_num <= len(building_types):
             bldg_type = building_types[select_num-1]
             #TODO Go to bldg_type (like "Blacksmith")
 
         else:
-            print("Selected option to leave {}".format(loc_name))
-            #TODO leave the location
+            print("Leaving {}".format(loc_name))
+            nearby_towns = loc_inst.leave(player_id, False)
+            nearby_str = "[(M)ap] [(Q)uest] [(I)nventory] [(H)elp] [(E)xit]\n"
+
+            for index, town in enumerate(nearby_towns):
+                town_name = town["city_name"]
+                nearby_str += "{}) Go to {}\n".format((index + 1), town_name)
+            nearby_str += "{}) Head back into {}\n".format((len(nearby_towns) + 1), loc_name)
+            print(nearby_str)
+            travel_str = input("Selection: ")
+            travel_id = int(travel_str)
+
+            if travel_id <= len(nearby_towns):
+                dest_name = nearby_towns[travel_id-1]["city_name"]
+
+                dest_obj = locationInst.go_to(dest_name, player_id)
+                destType = dest_obj["town_description"]
+                destBldgs = dest_obj["buildings"]
+                location_options(player_id, dest_name, destType, destBldgs)
+            else:
+                dest_name = loc_name
+                location_options(player_id, dest_name, loc_type, building_types)
 
     except ValueError:
-        menu_option(selection)
+        menu_option(selection, loc_name, loc_type, building_types)
 
 game_intro()
 

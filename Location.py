@@ -168,7 +168,8 @@ class Location():
 			welcome_str = welcome_str  + ' near you.' 
 
 			town_obj = {
-				'town_description':welcome_str,
+				# 'town_description':welcome_str,
+				'town_description': results[0]['location_type'],
 				'player_name':character_name,
 				'buildings':buildings,
 				'city_name':results[0]['location_name']
