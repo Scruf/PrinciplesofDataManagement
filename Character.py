@@ -12,6 +12,12 @@ class Character():
 										.format(character_name))
 		self.connection.conn.commit()
 
+	def get_char_id(self, char_name):
+		self.connection.cursor.execute("""SELECT player_id FROM Test.Character WHERE Test.Character.character_name = %s """, char_name)
+
+		char_id = self.connection.cursor.fetchall()[0][0]
+		return char_id
+
 	#fetches character level by player_id
 	def get_char_level(self, char_id):
 		self.connection.cursor.execute("""SELECT character_level FROM Test.Character 
