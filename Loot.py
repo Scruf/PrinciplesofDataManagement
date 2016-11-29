@@ -57,6 +57,26 @@ class Loot:
 
         return reward_amnt
 
+    def add_to_inventory(self, player_id, loot_id, quantity):
+        self.connection.cursor.execute(
+            """CALL Test.add_to_inventory('{}', '{}', '{}')""".format(player_id, loot_id, quantity))
+        self.connection.conn.commit()
+
+    def remove_from_inventory(self, player_id, loot_id, quantity):
+        self.connection.cursor.execute(
+            """CALL Test.remove_from_inventory('{}', '{}', '{}')""".format(player_id, loot_id, quantity))
+        self.connection.conn.commit()
+
+    def equip_item(self, player_id, loot_id, loot_type):
+        self.connection.cursor.execute(
+            """CALL Test.equip_item('{}', '{}', '{}')""".format(player_id, loot_id, loot_type))
+        self.connection.conn.commit()
+
+    def unequip_item(self, player_id, loot_id, loot_type):
+        self.connection.cursor.execute(
+            """CALL Test.unequip_item('{}', '{}', '{}')""".format(player_id, loot_id, loot_type))
+        self.connection.conn.commit()
+
     def determine_reward(self, player_id, reward_context):
         reward_type = ""
         type_roll = randint(0,100)
@@ -67,7 +87,6 @@ class Loot:
                 legendary = json.load(data)
 
             legendary_item = legendary[randint(0,len(legendary))]
-            
 
         if reward_context == "Monster drop":
             if type_roll <= 33:
@@ -99,13 +118,13 @@ class Loot:
 
         reward_amt = Loot.determine_reward_amount(reward_rarity, reward_type)
         all_possible_loot = Loot.fetch_loot(self, reward_rarity, reward_type)
-        random_loot_id = choice(all_possible_loot)
 
-        reward = dict({random_loot_id: reward_amt})
+        random_loot_id = choice(all_possible_loot)["loot_id"]
 
-        #Add reward to inventory
-        self.connection.cursor.execute("""CALL Test.add_to_inventory('{}', '{}', '{}')"""
-                                       .format(player_id, random_loot_id, reward_amt))
-        self.connection.conn.commit()
+        reward = dict(random_loot_id=reward_amt)
+
+        #Add reward to inventory if this is from a monster encounter
+        if reward_context == "Monster drop":
+            Loot.add_to_inventory(self, player_id, random_loot_id, reward_amt)
 
         return reward
