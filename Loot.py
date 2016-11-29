@@ -1,12 +1,13 @@
 from Connection import Connection
-from random import randint, choice
+from random import randint, choice, uniform
+import json
 
 
 class Loot:
     def __init__(self):
         self.connection = Connection()
 
-    #fetches all loot of a certain rarity and type
+    '''fetches all loot of a certain rarity and type'''
     def fetch_loot(self, loot_rarity, loot_type):
         self.connection.cursor.execute("""CALL Test.fetch_loot('{}', '{}')""".format(loot_rarity, loot_type))
         self.connection.conn.commit()
@@ -22,6 +23,7 @@ class Loot:
 
         return results
 
+    '''Randomly selects the rarity level of loot'''
     @staticmethod
     def get_drop_rarity():
         rarity_roll = randint(0,100)
@@ -38,6 +40,7 @@ class Loot:
 
         return rarity_str
 
+    '''Randomly selects reward based on rarity and type'''
     @staticmethod
     def determine_reward_amount(loot_rarity, loot_type):
         reward_amnt = 1
@@ -57,38 +60,75 @@ class Loot:
 
         return reward_amnt
 
+    '''Adds quantity of loot_id to Character_loot'''
     def add_to_inventory(self, player_id, loot_id, quantity):
         self.connection.cursor.execute(
             """CALL Test.add_to_inventory('{}', '{}', '{}')""".format(player_id, loot_id, quantity))
         self.connection.conn.commit()
 
+    '''Removes items from Character_loot for player_id'''
     def remove_from_inventory(self, player_id, loot_id, quantity):
         self.connection.cursor.execute(
             """CALL Test.remove_from_inventory('{}', '{}', '{}')""".format(player_id, loot_id, quantity))
         self.connection.conn.commit()
 
+    '''Equips item for character. Adjusts attack/defense accordingly'''
     def equip_item(self, player_id, loot_id, loot_type):
         self.connection.cursor.execute(
             """CALL Test.equip_item('{}', '{}', '{}')""".format(player_id, loot_id, loot_type))
         self.connection.conn.commit()
 
+    '''Unequips item for character. Adjusts attack/defense accordingly'''
     def unequip_item(self, player_id, loot_id, loot_type):
         self.connection.cursor.execute(
             """CALL Test.unequip_item('{}', '{}', '{}')""".format(player_id, loot_id, loot_type))
         self.connection.conn.commit()
 
+    '''Creates a legendary weapon'''
+    def create_legendary_weapon(self, loot_name, loot_atk_mod, loot_val, loot_desc):
+        self.connection.cursor.execute(
+            """CALL Test.create_legendary_weapon('{}', '{}', '{}', '{}')""".format(loot_name, loot_atk_mod, loot_val, loot_desc))
+        self.connection.conn.commit()
+
+        key_list = []
+        for description in self.connection.cursor.description:
+            key_list.append(str(description[0]))
+
+        results = []
+        for data in self.connection.cursor.fetchone():
+            dictionary = dict(zip(key_list, list(data)))
+            results.append(dictionary)
+        item_result = results[0]
+        item_id = item_result["loot_id"]
+
+        return item_id
+
+    '''Determines reward for quests and monster drops. If dropped by monster, instantly added to inventory'''
     def determine_reward(self, player_id, reward_context):
         reward_type = ""
         type_roll = randint(0,100)
         reward_rarity = Loot.get_drop_rarity()
-        if reward_context  == "Legendary":
-            legendary  = []
+
+        if reward_rarity == "Legendary":
+            legendary = []
             with open('loot.json') as data:
                 legendary = json.load(data)
 
             legendary_item = legendary[randint(0,len(legendary))]
+            loot_name = legendary_item["name"]
+            loot_desc = legendary_item["loot_description"]
 
-        if reward_context == "Monster drop":
+            atk_mod_raw = uniform(0.6, 1.3)
+            atk_mod = ("%.2f" % round(atk_mod_raw, 2))
+
+            loot_val = randint(200, 375)
+            loot_id = Loot.create_legendary_weapon(self, loot_name, atk_mod, loot_val, loot_desc)
+
+            reward = dict(loot_id=1)
+
+            return reward
+
+        elif reward_context == "Monster drop":
             if type_roll <= 33:
                 reward_type = "Currency"
             elif 33 < type_roll <= 66:
