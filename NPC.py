@@ -4,6 +4,7 @@ from random import randint
 from pprint import pprint
 from Character import Character
 from Dungeon import Dungeon
+import Building
 
 class NPC():
 
@@ -21,16 +22,14 @@ class NPC():
 
 		return npc_list[randint(0,len(npc_list))]
 
-	def create_npc(self, player_id, building_id, location_id):
+	def create_npc(self, player_id, typeStr, location_id):
+		buildInst = Building.Building()
 		with open('npc_names.json') as data:
 			npc_names = json.load(data)
 
 		random_npc= randint(0, len(npc_names) - 1)
 		name = npc_names[random_npc]['name']
 
-		self.connection.cursor.execute("""SELECT Type FROM Test.Buildings
-													WHERE Test.Buildings.building_id = %s """, building_id)
-		typeStr = self.connection.cursor.fetchall()[0][0]
 		if (typeStr == 'BlackSmith'):
 			function = 'Blacksmith'
 		elif(typeStr == 'Tavern'):
@@ -49,21 +48,29 @@ class NPC():
 			function = 'Healer'
 		fullName = name + " the " + function
 
-		self.connection.cursor.execute("""INSERT INTO `NPC`(npc_name, npc_function, location_id, building_id)
-    									VALUES('{}', '{}', {}, {});""".format(fullName, typeStr, location_id, building_id))
+		self.connection.cursor.execute("""INSERT INTO `NPC`(npc_name, npc_function, location_id)
+    									VALUES('{}', '{}', '{}');""".format(fullName, typeStr, location_id))
 		self.connection.conn.commit()
 
-		print("Upon entering the {} you see someone working hard. You approach them\n".format(typeStr))
-		print("\"Hello, I'm {}. I've got a problem can you handle it?\"\n".format(fullName))
-		choice = input("(Y/N) ")
-		if choice == 'Y' or choice == 'y':
-			#create quest
-			description = self.create_quest(location_id, player_id)
-			print("\"I need you to {}\"\n".format(description))
-			print("Quest added to your quest log!")
-		else:
-			print("OK then out ya go!\n")
-			#have player choose where to go next
+		print("Upon entering the {} you see someone working hard.\n".format(typeStr))
+		print("Options: \n")
+		selection = input ("1) Approach them\n"
+							"2) Leave\n"
+							"Selection: ")
+		if selection == "1":
+			print("\"Hello, I'm {}. I've got a problem can you handle it?\"\n".format(fullName))
+			choice = input("(Y/N) ")
+			if choice == 'Y' or choice == 'y':
+				#create quest
+				description = self.create_quest(location_id, player_id)
+				print("\"I need you to {}\"\n".format(description))
+				print("Quest added to your quest log!")
+
+			else:
+				print("OK then out ya go!\n")
+
+		buildInst.leave_building(player_id, location_id)
+				
 
 
 
@@ -81,7 +88,7 @@ class NPC():
 		#set the type
 		if (typeInt == 1):
 			typeChar = 'K'
-			description = "Kill all these monsters"
+			description = "Kill this monster"
 		elif (typeInt == 2):
 			typeChar = 'F'
 			description = "Fetch an item for me"
@@ -94,7 +101,7 @@ class NPC():
 		else:
 			experience = randint(1000, 3000)
 
-		self.connection.cursor.execute("""CALL Test.create_quest('{}','{}', '{}', '{}', '{}', '{}', '{}')"""
+		self.connection.cursor.execute("""CALL Test.create_quest('{}','{}', '{}', '{}', '{}', '{}')"""
 									   .format(reward, description, typeChar, loc_id, experience, dung_id))
 		self.connection.conn.commit()
 
@@ -102,7 +109,7 @@ class NPC():
 
 		quest_id = self.connection.cursor.fetchall()[0][0]
 
-		self.connection.cursor.execute("""INSERT INTO Quest_log (character_id, quest_id) VALUES ({}, {}))"""
+		self.connection.cursor.execute("""INSERT INTO Quest_log (character_id, quest_id) VALUES ({}, {})"""
 										.format(player_id, quest_id))
 
 		self.connection.conn.commit()

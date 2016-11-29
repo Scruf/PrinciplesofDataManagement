@@ -1,4 +1,6 @@
 from Connection import Connection
+import Combat
+from random import randint
 
 
 class Monster:
@@ -29,3 +31,23 @@ class Monster:
             key_list.append(str(description[0]))
 
         return dict(zip(key_list, list(self.connection.cursor.fetchall()[0])))
+
+    def spawn_monster(self, player_id, quest_id, challenge_level, loc_id):
+        num = randint(1, 17)
+        self.connection.cursor.execute("""SELECT * FROM Test.Monster
+                                             WHERE monster_id = {}"""
+                                             .format(num) )
+
+
+        key_list = []
+        for description in self.connection.cursor.description:
+            key_list.append(str(description[0]))
+
+        monster = dict(zip(key_list,list(self.connection.cursor.fetchall()[0])))
+
+        print("You've encountered a {}!".format(monster['monster_name']))
+        combatInst = Combat.Combat()
+        combatInst.initiate_combat(player_id, monster['monster_id'], loc_id, quest_id)
+
+
+
