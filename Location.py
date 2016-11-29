@@ -348,9 +348,27 @@ class Location():
 			return self.get_location(self.get_player_name(player_id))
 
 			
+	def map(self,player_id):
+		current_id = self.get_current_location(self.get_player_name(player_id))
+		map_query = """SELECT location_name, location_type
+					   FROM Test.Location
+					   WHERE discovered_from_id = '{}'""".format(
+					   		current_id
+					   )
+		self.connection.cursor.execute(map_query)
+		self.connection.conn.commit()
+		discovered_locations = []
+		for city in self.connection.cursor.fetchall():
+			city ={
+				'city_name':city[0],
+				'city_type':city[1]
+			}
+			discovered_locations.append(city)
 			
+		return discovered_locations
+
 
 if __name__ == '__main__':
 	location = Location()
-	print(location.leave('11',False))
+	print(location.map('11'))
 	
