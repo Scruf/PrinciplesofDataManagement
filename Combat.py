@@ -1,6 +1,9 @@
 from Connection import Connection
 from Character import Character
-from Monster import Monster
+from Location import Location
+import Options
+import Quest
+import Monster
 from Loot import Loot
 from random import randint
 from tabulate import tabulate
@@ -9,18 +12,18 @@ class Combat:
     def __init__(self):
         self.connection = Connection()
 
-    def initiate_combat(self, player_id, monster_id):
+    def initiate_combat(self, player_id, monster_id, loc_id, quest_id):
         
         preCombatCharacter = Character()
         preCombatCharAttrs = preCombatCharacter.get_currplayer_attr(player_id)
-        preCombatMonster = Monster()
+        preCombatMonster = Monster.Monster()
         preCombatMonsterAttrs = preCombatMonster.get_monst_attrs(monster_id)
         monstHealth = preCombatMonsterAttrs['hitpoints']
         charHealth = preCombatCharAttrs['curr_hp']
         print("\nYou have entered combat!\n")
         while (monstHealth > 0 and charHealth > 0):
             characterInst = Character()
-            monstInst = Monster()
+            monstInst = Monster.Monster()
             charAttrs = {}
             monstAttrs = {}
             loot = {}
@@ -107,87 +110,89 @@ class Combat:
                 print("Select Battle Item From Inventory: \n")
                 i = 0
                 table = []
-                
-                for item in loot:
-                    table.append([item['loot_name'],
-                                    item['health_modifier'],
-                                    item['defense_modifier'],
-                                    item['attack_modifier'],
-                                    item['quantity']])
-
-                print (tabulate(table, headers=['Name', 
-                    'Health Modifier', 
-                    'Defense Modifier', 
-                    'Attack Modifier', 
-                    'Quantity'], showindex='always'))
-
-                choice = input ("Select: ")
-                choiceInt = int(choice)
-                itemChoice = loot[choiceInt]
-
-                #decrement quantity of item
-                newQuant = itemChoice['quantity'] - 1
-                if newQuant == 0:
-                    #drop item from table
-                    self.connection.cursor.execute("""DELETE FROM Character_loot
-                                WHERE Character_loot.loot_id IN
-                                (SELECT loot_id FROM Loot WHERE loot_name='{}')
-                                AND Character_loot.player_id = {}"""
-                                .format(itemChoice['loot_name'], player_id))
-                    self.connection.conn.commit
+                if (len(loot) == 0):
+                    print("No items!\n")
                 else:
-                    self.connection.cursor.execute("""
-                        UPDATE Character_loot
-                        SET quantity={}
-                        WHERE Character_loot.loot_id IN
-                              (SELECT loot_id FROM Loot WHERE loot_name='{}')
-                        AND Character_loot.player_id = {}"""
-                        .format(newQuant, itemChoice['loot_name'], player_id))
-                    self.connection.conn.commit()
+                    for item in loot:
+                        table.append([item['loot_name'],
+                                        item['health_modifier'],
+                                        item['defense_modifier'],
+                                        item['attack_modifier'],
+                                        item['quantity']])
 
-                print("\nYou chose: {}\n".format(itemChoice['loot_name']))
-                #defense modifier
-                if (itemChoice['defense_modifier'] > 0):
-                    increment = charAttrs['base_defense'] * itemChoice['defense_modifier']
-                    curr_def = charAttrs['curr_defense'] + increment
-                    self.connection.cursor.execute(
-                        """UPDATE Test.Character 
-                            SET curr_defense='{}' 
-                            WHERE player_id ='{}'"""
-                            .format(curr_def, player_id))
-                    self.connection.conn.commit()
-                    print("Defense increased by {}!".format(increment))
-                    print("Defense now at {}".format(curr_def))
-                #health modifier
-                elif (itemChoice['health_modifier'] > 0):
-                    increment = charAttrs['max_hp'] * itemChoice['health_modifier']
-                    if (charAttrs['curr_hp'] + increment) >= charAttrs['max_hp']:
-                        curr_health = charAttrs['max_hp']
+                    print (tabulate(table, headers=['Name', 
+                        'Health Modifier', 
+                        'Defense Modifier', 
+                        'Attack Modifier', 
+                        'Quantity'], showindex='always'))
+
+                    choice = input ("Select: ")
+                    choiceInt = int(choice)
+                    itemChoice = loot[choiceInt]
+
+                    #decrement quantity of item
+                    newQuant = itemChoice['quantity'] - 1
+                    if newQuant == 0:
+                        #drop item from table
+                        self.connection.cursor.execute("""DELETE FROM Character_loot
+                                    WHERE Character_loot.loot_id IN
+                                    (SELECT loot_id FROM Loot WHERE loot_name='{}')
+                                    AND Character_loot.player_id = {}"""
+                                    .format(itemChoice['loot_name'], player_id))
+                        self.connection.conn.commit
                     else:
-                        curr_health = charAttrs['curr_hp'] + increment
-                    #run query
-                    self.connection.cursor.execute(
-                        """UPDATE Test.Character 
-                            SET curr_hp='{}' 
-                            WHERE player_id ='{}'"""
-                            .format(curr_health, player_id))
-                    self.connection.conn.commit()
+                        self.connection.cursor.execute("""
+                            UPDATE Character_loot
+                            SET quantity={}
+                            WHERE Character_loot.loot_id IN
+                                  (SELECT loot_id FROM Loot WHERE loot_name='{}')
+                            AND Character_loot.player_id = {}"""
+                            .format(newQuant, itemChoice['loot_name'], player_id))
+                        self.connection.conn.commit()
 
-                    print("Health increased by {}!\n".format(increment))
-                    print("Health now at {}\n".format(curr_health))
-                #attack modifier
-                elif (itemChoice['attack_modifier'] > 0):
-                    increment = charAttrs['base_damage'] * itemChoice['attack_modifier']
-                    curr_attack = charAttrs['curr_attack'] + increment
-                    #run query
-                    self.connection.cursor.execute(
-                        """UPDATE Test.Character 
-                            SET curr_attack='{}' 
-                            WHERE player_id ='{}'"""
-                            .format(curr_attack, player_id))
-                    self.connection.conn.commit()
-                    print("Attack increased by {}!".format(increment))
-                    print("Attack now at {}\n".format(curr_attack))
+                    print("\nYou chose: {}\n".format(itemChoice['loot_name']))
+                    #defense modifier
+                    if (itemChoice['defense_modifier'] > 0):
+                        increment = charAttrs['base_defense'] * itemChoice['defense_modifier']
+                        curr_def = charAttrs['curr_defense'] + increment
+                        self.connection.cursor.execute(
+                            """UPDATE Test.Character 
+                                SET curr_defense='{}' 
+                                WHERE player_id ='{}'"""
+                                .format(curr_def, player_id))
+                        self.connection.conn.commit()
+                        print("Defense increased by {}!".format(increment))
+                        print("Defense now at {}".format(curr_def))
+                    #health modifier
+                    elif (itemChoice['health_modifier'] > 0):
+                        increment = charAttrs['max_hp'] * itemChoice['health_modifier']
+                        if (charAttrs['curr_hp'] + increment) >= charAttrs['max_hp']:
+                            curr_health = charAttrs['max_hp']
+                        else:
+                            curr_health = charAttrs['curr_hp'] + increment
+                        #run query
+                        self.connection.cursor.execute(
+                            """UPDATE Test.Character 
+                                SET curr_hp='{}' 
+                                WHERE player_id ='{}'"""
+                                .format(curr_health, player_id))
+                        self.connection.conn.commit()
+
+                        print("Health increased by {}!\n".format(increment))
+                        print("Health now at {}\n".format(curr_health))
+                    #attack modifier
+                    elif (itemChoice['attack_modifier'] > 0):
+                        increment = charAttrs['base_damage'] * itemChoice['attack_modifier']
+                        curr_attack = charAttrs['curr_attack'] + increment
+                        #run query
+                        self.connection.cursor.execute(
+                            """UPDATE Test.Character 
+                                SET curr_attack='{}' 
+                                WHERE player_id ='{}'"""
+                                .format(curr_attack, player_id))
+                        self.connection.conn.commit()
+                        print("Attack increased by {}!".format(increment))
+                        print("Attack now at {}\n".format(curr_attack))
 
             #get the attributes again for monster attack, they probably have changed
             afterAttackChar = Character()
@@ -239,6 +244,7 @@ class Combat:
 
                     if newHealth == 0:
                         print("\nYou've been killed!\n")
+                        quit()
 
                     charHealth = newHealth
                     self.connection.cursor.execute("""UPDATE Test.Character
@@ -248,15 +254,17 @@ class Combat:
                 else:
                     print("\nThe monster missed!\n")
             else:
+                pass
                 #give reward
-                lootInst = Loot()
-                reward = {}
-                reward = lootInst.determine_reward(player_id, "Monster drop")
-                for key in reward:
-                    self.connection.cursor.execute("""SELECT loot_name FROM Loot WHERE loot_id = {}"""
-                                            .format(key))
-                    loot_name = self.connection.cursor.fetchall()[0][0]
-                    print("\nYou've received a {}. {} of them!".format(loot_name, reward[key]))
+                # lootInst = Loot()
+                # reward = {}
+                # reward = lootInst.determine_reward(player_id, "Monster drop")
+                # for key in reward:
+                #     self.connection.cursor.execute("""SELECT loot_name FROM Loot WHERE loot_id = {}"""
+                #                             .format(key))
+                #     loot_name = self.connection.cursor.fetchall()[0][0]
+                #     print("\nYou've received a {}. {} of them!".format(loot_name, reward[key]))
+                #     lootInst.add_to_inventory(player_id, key, reward[key])
 
             if defend:
                 self.connection.cursor.execute(
@@ -274,3 +282,22 @@ class Combat:
                                 preCombatCharAttrs['curr_defense'],
                                 preCombatCharAttrs['curr_attack'], player_id))
         self.connection.conn.commit()
+
+        questInst = Quest.Quest()
+        questType = questInst.get_quest_type(quest_id)
+        if questType == 'K':
+            print("You've killed the monster!\n")
+        elif questType == 'R':
+            print("You notice a person in the darkness...\n")
+            print("\"My God! I never thought I'd get out of here. Thank you, hero!\"\n")
+        elif questType == 'F':
+            print("You notice a shiny object on the ground...\n")
+            print("It's a goblet! Must be what that person was looking for\n")
+
+        questInst.finish_quest(quest_id, player_id)
+        print("You'll be transported back to the town where you received the quest\n")
+        locInst = Location()
+        optionsInst = Options.Options()
+        name = preCombatCharacter.get_char_name(player_id)
+        location = locInst.get_location(name)
+        optionsInst.location_options(player_id, location['city_name'], location['town_description'], location['buildings'])

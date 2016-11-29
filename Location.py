@@ -19,6 +19,14 @@ class Location():
 
 		return self.connection.cursor.fetchone()[0]
 
+	def get_location_id(self, loc_name):
+		self.connection.cursor.execute("""
+			SELECT location_id FROM Test.Location
+			WHERE Test.Location.location_name='{}'"""
+			.format(loc_name))
+
+		return self.connection.cursor.fetchone()[0]
+
 
 	def populate(self, loc_id):
 		random_buildings = random.sample(range(1,9),self.get_num_buildings(loc_id))
@@ -243,6 +251,7 @@ class Location():
 			building_name.append(self.connection.cursor.fetchone()[0])
 
 		return building_name
+
 	"""
 		@method def go_to(location_name,player_id) will move player to the location of the player
 				@param location_name is the location name where player wants to go

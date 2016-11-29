@@ -18,6 +18,12 @@ class Character():
 		char_id = self.connection.cursor.fetchall()[0][0]
 		return char_id
 
+	def get_char_name(self, char_id):
+		self.connection.cursor.execute("""SELECT character_name FROM Test.Character WHERE Test.Character.player_id = %s """, char_id)
+
+		name = self.connection.cursor.fetchall()[0][0]
+		return name
+
 	#fetches character level by player_id
 	def get_char_level(self, char_id):
 		self.connection.cursor.execute("""SELECT character_level FROM Test.Character 
@@ -64,3 +70,25 @@ class Character():
 			results.append(data[0])
 
 		return results
+
+	#fetches quests for player
+	def fetch_quests(self, player_id):
+		self.connection.cursor.execute("""SELECT Quest_log.quest_id, Quest.description, Quest.reward
+										FROM Quest_log
+										INNER JOIN Quest
+										ON Quest_log.quest_id = Quest.quest_id
+										AND Quest_log.character_id={}""".format(player_id))
+
+		results = self.connection.cursor.fetchall()
+		key_list = []
+		for description in self.connection.cursor.description:
+			key_list.append(str(description[0]))
+
+		i = 0
+		quests = []
+		for item in results:
+			entry = dict(zip(key_list, list(results[i])))
+			quests.append(entry)
+			i = i + 1
+
+		return quests
