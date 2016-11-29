@@ -1,0 +1,19 @@
+           /\                                                                 /\
+ _         )( _________________                             _________________ )(         _
+(_)///////(**)_________________> WELCOME TO DUNGEON NIGHTS <_________________(**)\\\\\\\(_)
+           )(                                                                 )(
+           \/                                                                 \/
+              Dungeon Nights is a text-based RPG you can play in your terminal
+               When prompted for a selection, enter the number of your choice
+
+                         When not in combat, you can also enter:
+               * M or Map to pull up all locations your character has visited
+               * Q or Quests to pull up all quests your character accepted
+               * I or Inventory to pull up character inventory
+               * H or Help to display this message again
+               * E or Exit to finish playing the game
+           /\                                                                 /\
+ _         )( ______________________________   ______________________________ )(         _
+(_)///////(**)______________________________> <______________________________(**)\\\\\\\(_)
+           )(                                                                 )(
+           \/                                                                 \/
