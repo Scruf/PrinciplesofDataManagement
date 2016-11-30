@@ -34,13 +34,9 @@ class Monster:
 
     def spawn_monster(self, player_id, quest_id, challenge_level, loc_id):
         num = randint(1, 17)
-        # self.connection.cursor.execute("""SELECT * FROM Test.Monster
-        #                                      WHERE monster_id = {}"""
-        #                                      .format(num) )
-
         self.connection.cursor.execute("""SELECT * FROM Test.Monster
-                                             WHERE monster_id = 14"""
-                                        )
+                                             WHERE monster_id = {}"""
+                                             .format(num) )
 
         key_list = []
         for description in self.connection.cursor.description:
