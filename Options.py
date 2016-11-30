@@ -10,7 +10,8 @@ connection = Connection()
 characterInst = Character()
 locationInst = Location()
 
-class Options():
+
+class Options:
 
 	def __init__(self):
 		self.connection = Connection()
@@ -63,7 +64,7 @@ class Options():
 	    selection = option_str.lower()
 
 	    if selection == 'm' or selection == 'map':
-	        print("Selected map option")
+	        self.display_map(player_id, loc_name, loc_type, building_types)
 	    elif selection == 'q' or selection == 'quest':
 	        print("Selected quest log option\n")
 	        self.display_quest_log(player_id, loc_name, loc_type, building_types)
@@ -106,7 +107,6 @@ class Options():
 	        select_num = int(selection)
 	        if select_num <= len(building_types):
 	            bldg_type = building_types[select_num-1]
-	            #TODO Go to bldg_type (like "Blacksmith")
 	            curr_name = characterInst.get_char_name(player_id)
 	            loc_id = loc_inst.get_current_location(curr_name)
 	            build_inst.enter_building(bldg_type, player_id, loc_id)
@@ -136,6 +136,45 @@ class Options():
 	                self.location_options(player_id, dest_name, loc_type, building_types)
 	    except ValueError:
 	        self.menu_option(selection, player_id, loc_name, loc_type, building_types)
+
+	def display_map(self, player_id, curr_loc_name, curr_loc_type, curr_building_types):
+		player_locations = locationInst.map(player_id)
+
+		player_map = "Enter location ID to travel to city, or enter 'C' to cancel\n"
+		for index, location in enumerate(player_locations):
+			city_name = location["city_name"]
+			player_map += "{}) {}\n".format((index+1), city_name)
+		print(player_map)
+
+		map_selection = input("Selection: ")
+		try:
+			city_num = int(map_selection)
+			if city_num <= len(player_locations):
+				selected_city = player_locations[city_num - 1]
+				selected_id = selected_city["city_id"]
+
+				update_query = """CALL Test.update_location('{}','{}')""".format(
+					selected_id, player_id
+				)
+				self.connection.cursor.execute(update_query)
+				self.connection.conn.commit()
+
+				character_name = characterInst.get_char_name(player_id)
+				townObj = locationInst.get_location(character_name)
+
+				locName = townObj["city_name"]
+				locType = townObj["town_description"]
+				bldgTypes = townObj["buildings"]
+
+				print("blding types length: {}".format(len(bldgTypes)))
+				if len(bldgTypes) > 0:
+					self.location_options(player_id, locName, locType, bldgTypes)
+				else:
+					locationInst.populate(selected_id)
+					self.location_options(player_id, locName, locType, bldgTypes)
+		except ValueError:
+			self.location_options(player_id, curr_loc_name, curr_loc_type, curr_building_types)
+
 
 	def display_quest_log(self, player_id, loc_name, loc_type, building_types):
 		quests = characterInst.fetch_quests(player_id)
