@@ -29,7 +29,7 @@ Ex: You can equip/unequip weapons/armor, which modifies multiple tables based on
 but since combat and quests don't give you items due to gameflow problems, you never get a chance to equip
 
 * Equipping/unequipping weapons/armor
-** This can be tested though if you load as the character 'Zachary', who does have items
+** This can be tested though if you load as the character 'Zachary', who does have items.
 * Getting loot from quest completion/monster drop
 * Completing quest by returning to NPC
 * Buying/Selling items to NPCs 
