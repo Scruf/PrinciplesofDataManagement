@@ -92,3 +92,20 @@ class Character():
 			i = i + 1
 
 		return quests
+
+	#fetch all character loot
+	def fetch_loot(self, player_id):
+		self.connection.cursor.execute("""CALL Test.get_character_inventory('{}')""".format(player_id))
+		results = self.connection.cursor.fetchall()
+		key_list = []
+		for description in self.connection.cursor.description:
+			key_list.append(str(description[0]))
+
+		i = 0
+		loot = []
+		for item in results:
+			entry = dict(zip(key_list, list(results[i])))
+			loot.append(entry)
+			i = i + 1
+
+		return loot

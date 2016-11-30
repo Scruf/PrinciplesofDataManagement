@@ -23,6 +23,21 @@ class Loot:
 
         return results
 
+    def get_loot_item(self, loot_id):
+        self.connection.cursor.execute("""SELECT * FROM Loot 
+                                            WHERE loot_id='{}'""".format(loot_id))
+
+        key_list = []
+        for description in self.connection.cursor.description:
+            key_list.append(str(description[0]))
+
+        results = []
+        for data in self.connection.cursor.fetchall():
+            dictionary = dict(zip(key_list,list(data)))
+            results.append(dictionary)
+
+        return results[0]
+
     '''Randomly selects the rarity level of loot'''
     @staticmethod
     def get_drop_rarity():
@@ -83,6 +98,23 @@ class Loot:
         self.connection.cursor.execute(
             """CALL Test.unequip_item('{}', '{}', '{}')""".format(player_id, loot_id, loot_type))
         self.connection.conn.commit()
+
+    '''Get equipped items'''
+    def get_equipped_items(self, player_id):
+        self.connection.cursor.execute(
+            """CALL Test.get_equipped_items('{}')""".format(player_id))
+
+        key_list = []
+        for description in self.connection.cursor.description:
+            key_list.append(str(description[0]))
+
+        results = []
+        for data in self.connection.cursor.fetchall():
+            dictionary = dict(zip(key_list, list(data)))
+            results.append(dictionary)
+
+        return results
+
 
     '''Creates a legendary weapon'''
     def create_legendary_weapon(self, loot_name, loot_atk_mod, loot_val, loot_desc):
