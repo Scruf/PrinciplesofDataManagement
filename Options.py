@@ -4,6 +4,7 @@ from Location import Location
 from tabulate import tabulate
 import Building
 import Quest
+import Loot
 
 connection = Connection()
 characterInst = Character()
@@ -68,6 +69,7 @@ class Options():
 	        self.display_quest_log(player_id, loc_name, loc_type, building_types)
 	    elif selection == 'i' or selection == 'inventory':
 	        print("Selected character inventory")
+	        self.display_char_inventory(player_id, loc_name, loc_type, building_types)
 	    elif selection == 'h' or selection == 'help':
 	        game_help()
 	        self.location_options(player_id, loc_name, loc_type, building_types)
@@ -151,10 +153,72 @@ class Options():
 			'Description',
 			'Reward']))
 
-		choice = input("Select :")
+		choice = input("Select: ")
 		if choice == 'C':
 			self.location_options(player_id, loc_name, loc_type, building_types)
 		else:
 			questInst = Quest.Quest()
 			quest_id = int(choice)
 			questInst.initiate_quest(quest_id, player_id, location_id)
+
+	def display_char_inventory(self, player_id, loc_name, loc_type, building_types):
+		characterInst = Character()
+		loot = characterInst.fetch_loot(player_id)
+		print("\nInventory (Type \"equip\" to begin equipping an item, \"C\" to Cancel')")
+		i = 0
+		table = []
+
+		for item in loot:
+			table.append([item['loot_id'],
+							item['loot_name'],
+							item['item_value'],
+							item['item_desc'],
+							item['equipped']])
+
+		print (tabulate(table, headers=['ID',
+										'Name',
+										'Item Value',
+										'Item Description',
+										'Equipped']))
+		choice = input("Select: ")
+		if choice == 'C':
+			self.location_options(player_id, loc_name, loc_type, building_types)
+		elif choice == 'equip' or choice == 'Equip':
+			while(True):
+				lootInst = Loot.Loot()
+				selection = input("Which item would you like to equip? (Type the ID) ")
+				if selection == 'C':
+					break
+				loot_is_in = False
+				for loot_item in loot:
+					if int(selection) in loot_item.values():
+						loot_is_in = True
+
+				if loot_is_in == False:
+					#player doesn't have that loot item
+					print("You don't have that item!")
+				else:
+					selectLoot = lootInst.get_loot_item(selection)
+					equippedLoot = lootInst.get_equipped_items(player_id)
+					#if we already have the same type of item equipped,
+					#unequip that item
+					item_in_equipped = False
+					for item in equippedLoot:
+						if item['loot_type'] == selectLoot['loot_type']:
+							lootInst.unequip_item(player_id, item['loot_id'], item['loot_type'])
+							lootInst.equip_item(player_id, int(selection), selectLoot['loot_type'])
+							print("{} equipped!\n".format(selectLoot['loot_name']))
+							item_in_equipped = True
+							break
+					if item_in_equipped == True:
+						break
+
+					lootInst.equip_item(player_id, int(selection), selectLoot['loot_type'])
+					print("{} equipped!\n".format(selectLoot['loot_name']))
+					break
+
+			self.location_options(player_id, loc_name, loc_type, building_types)
+		self.location_options(player_id, loc_name, loc_type, building_types)
+
+
+			
