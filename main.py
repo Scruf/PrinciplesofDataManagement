@@ -16,19 +16,6 @@ def game_intro():
     intro_file.close()
     optionsInst.start_options()
 
-'''Reads from text file, says goodbye and closes program'''
-def game_outro():
-    outro_file = open('goodbye.txt', 'r')
-    print(outro_file.read())
-    outro_file.close()
-
-    quit()
-
-'''Reads from help text file'''
-def game_help():
-    help_file = open('help.txt', 'r')
-    print(help_file.read())
-    help_file.close()
 
 # '''Puts the starting options out on the console, handles character creation/loading'''
 # def start_options():

@@ -55,7 +55,7 @@ class Options():
 	            print("Character not found! Returning to options...")
 	            self.start_options()
 	    elif start_str == "3":
-	        game_outro()
+	        self.game_outro()
 
 
 	'''Handles selection when calling generic menu items (map, quests, etc...)'''
@@ -71,14 +71,14 @@ class Options():
 	        print("Selected character inventory")
 	        self.display_char_inventory(player_id, loc_name, loc_type, building_types)
 	    elif selection == 'h' or selection == 'help':
-	        game_help()
+	        self.game_help()
 	        self.location_options(player_id, loc_name, loc_type, building_types)
 	    elif selection == 'e' or selection == 'exit':
-	        game_outro()
+	        self.game_outro()
 	    else:
 	        print("Oops, you entered in a bad command!\n"
 	              "I guess if you can't follow directions, you should stop playing :(")
-	        game_outro()
+	        self.game_outro()
 
 
 	'''Provides options to do once in a location'''
@@ -219,6 +219,20 @@ class Options():
 
 			self.location_options(player_id, loc_name, loc_type, building_types)
 		self.location_options(player_id, loc_name, loc_type, building_types)
+
+	'''Reads from text file, says goodbye and closes program'''
+	def game_outro(self):
+	    outro_file = open('goodbye.txt', 'r')
+	    print(outro_file.read())
+	    outro_file.close()
+
+	    quit()
+
+	'''Reads from help text file'''
+	def game_help(self):
+	    help_file = open('help.txt', 'r')
+	    print(help_file.read())
+	    help_file.close()
 
 
 			
