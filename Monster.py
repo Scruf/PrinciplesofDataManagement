@@ -38,7 +38,6 @@ class Monster:
                                              WHERE monster_id = {}"""
                                              .format(num) )
 
-
         key_list = []
         for description in self.connection.cursor.description:
             key_list.append(str(description[0]))

@@ -275,12 +275,21 @@ class Combat:
                 self.connection.conn.commit()
 
 
-        #set player attributes to pre-combat attrs
+        #set player/monster attributes to pre-combat attrs
         self.connection.cursor.execute(
                         """UPDATE Test.Character SET curr_defense='{}', curr_attack='{}' 
                         WHERE player_id ='{}'""".format(
                                 preCombatCharAttrs['curr_defense'],
                                 preCombatCharAttrs['curr_attack'], player_id))
+        self.connection.conn.commit()
+
+        self.connection.cursor.execute(
+                        """UPDATE Test.Monster SET defense='{}', damage='{}', hitpoints='{}' 
+                        WHERE monster_id ='{}'""".format(
+                                preCombatMonsterAttrs['defense'],
+                                preCombatMonsterAttrs['damage'], 
+                                preCombatMonsterAttrs['hitpoints'], monster_id))
+
         self.connection.conn.commit()
 
         questInst = Quest.Quest()

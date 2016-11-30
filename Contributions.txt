@@ -1,5 +1,10 @@
-Contributions:
-Zach: I worked on the combat section of the game as well as fleshing out quests, Dungeons, entering/exiting buildings and NPCs
-Colton:
-Egor: I worked on the locations and also web scrapers to aggregate the data which later was used in the game . Also set up MySQL server on the Linode
+Zach: I worked on the combat and NPC section of the game, as well as fleshing out quests, Dungeons, entering/exiting buildings
+
+Colton: I worked on the loot section of the game, general menu options (map, inventory, quests, help, quit),
+and locations and quests sections as needed for final product. I also created a large portion of overall gameflow for
+the console (including the sick ASCII art you see at the start/end of the game)
+
+Egor: I worked on the locations and also web scrapers to aggregate the data which later was used in the game.
+Also set up MySQL server on the Linode
+
 Shalimar: I helped with hammering out the design early on and promoting discussion, though when it came down to it, I got busy the last week when the team began to get together to code it, and was unavailable for meetings, which limited my effectiveness. (Schedule's didn't align properly)
