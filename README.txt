@@ -1,4 +1,34 @@
-In order to run the program first youll need to install the pymysql and tabulate by using this commands “pip3 install pymysql” and “pip3 install tabulate”
+# Dungeon Nights
 
+## Install instructions
+In order to run the program, first you'll need to install python modules PyMySQL and Tabulate
+* To install PyMySQL, run “pip3 install pymysql”
+* To install Tabulate, run “pip3 install tabulate”
 
-For a DungenKnigts project our stack consist of Python3 and MySQL server . For interaction with MySQL server we used Datagrip which allowed us to use database easily. We were able to create queries, procedures and views more easily as opposed of using shell to connect to MySQL directly. Also it allows us to see a data in our table with doing a projections. Also we used pymysql to run the queries and stored procedures. For some repeated queries we created stored procedures which allowed us to make our code more succinct and readable. MySQL server was deployed on the ubuntu image which was provided by Linode.com. We also used web scraping to get random data which we used for NPCS , Towns and Monsters. As for the code we used OOP principals to split our game into multiple classes which we are using as well as creating some helper method along the way. 
+## Run instructions
+In order to play Dungeon Nights:
+* To start, run "python3 main.py" from inside the project directory
+* After started, instructions for what to do will be displayed. Follow them and enjoy!
+
+## Features
+Like many game developers are quick to learn, our initial plan was far too vast for our given timeline.
+While we would have loved to include all the features we fantasized, our deadline limited what we were able to accomplish
+
+### Gameplay features (involving DB calls)
+* Character creation/loading
+* Travel to/Leave location
+* Enter building
+* Talk to NPC
+* Accept quest
+* Fight monster
+* Display character map/inventory/questlog
+
+### Theoretical features (of existing implementations of DB calls)
+These are features that would in theory work if they were connected by other working Python functions
+Ex: You can equip/unequip weapons/armor, which modifies multiple tables based on queried values,
+but since combat and quests don't give you items due to gameflow problems, you never get a chance to equip
+
+* Equipping/unequipping weapons/armor
+* Getting loot from quest completion/monster drop
+* Completing quest by returning to NPC
+* Buying/Selling items to NPCs 
