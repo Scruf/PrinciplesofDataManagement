@@ -1,3 +1,7 @@
+from Connection import Connection
+from Character import Character
+from Location import Location
+from Building import Building
 from Options import Options
 
 optionsInst = Options()
