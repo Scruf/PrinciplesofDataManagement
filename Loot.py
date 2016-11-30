@@ -193,7 +193,7 @@ class Loot:
 
         random_loot_id = choice(all_possible_loot)["loot_id"]
 
-        reward = dict(random_loot_id=reward_amt)
+        reward = {"{}".format(random_loot_id): reward_amt}
 
         #Add reward to inventory if this is from a monster encounter
         if reward_context == "Monster drop":

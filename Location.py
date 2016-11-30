@@ -359,19 +359,19 @@ class Location():
 
 			
 	def map(self,player_id):
-		current_id = self.get_current_location(self.get_player_name(player_id))
-		map_query = """SELECT location_name, location_type
+		# current_id = self.get_current_location(self.get_player_name(player_id))
+		map_query = """SELECT location_id, location_name, location_type
 					   FROM Test.Location
-					   WHERE discovered_from_id = '{}'""".format(
-					   		current_id
-					   )
+					   WHERE character_id = '{}'""".format(player_id)
+		
 		self.connection.cursor.execute(map_query)
 		self.connection.conn.commit()
 		discovered_locations = []
 		for city in self.connection.cursor.fetchall():
 			city ={
-				'city_name':city[0],
-				'city_type':city[1]
+				'city_id':city[0],
+				'city_name':city[1],
+				'city_type':city[2]
 			}
 			discovered_locations.append(city)
 			
