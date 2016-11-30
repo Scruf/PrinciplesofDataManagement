@@ -73,7 +73,7 @@ class Character():
 
 	#fetches quests for player
 	def fetch_quests(self, player_id):
-		self.connection.cursor.execute("""SELECT Quest_log.quest_id, Quest.description, Quest.reward
+		self.connection.cursor.execute("""SELECT Quest_log.quest_id, Quest_log.finished, Quest.description, Quest.reward
 										FROM Quest_log
 										INNER JOIN Quest
 										ON Quest_log.quest_id = Quest.quest_id
