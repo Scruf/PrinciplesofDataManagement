@@ -1,5 +1,5 @@
 Contributions:
 Zach: I worked on the combat section of the game as well as fleshing out quests, Dungeons, entering/exiting buildings and NPCs
 Colton:
-Egor:
+Egor: I worked on the locations and also web scrapers to aggregate the data which later was used in the game . Also set up MySQL server on the Linode
 Shalimar:
