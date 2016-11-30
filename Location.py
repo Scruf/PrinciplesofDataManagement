@@ -363,7 +363,7 @@ class Location():
 		map_query = """SELECT location_id, location_name, location_type
 					   FROM Test.Location
 					   WHERE character_id = '{}'""".format(player_id)
-		
+
 		self.connection.cursor.execute(map_query)
 		self.connection.conn.commit()
 		discovered_locations = []

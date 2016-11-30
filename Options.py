@@ -66,10 +66,8 @@ class Options:
 	    if selection == 'm' or selection == 'map':
 	        self.display_map(player_id, loc_name, loc_type, building_types)
 	    elif selection == 'q' or selection == 'quest':
-	        print("Selected quest log option\n")
 	        self.display_quest_log(player_id, loc_name, loc_type, building_types)
 	    elif selection == 'i' or selection == 'inventory':
-	        print("Selected character inventory")
 	        self.display_char_inventory(player_id, loc_name, loc_type, building_types)
 	    elif selection == 'h' or selection == 'help':
 	        self.game_help()
@@ -137,6 +135,7 @@ class Options:
 	    except ValueError:
 	        self.menu_option(selection, player_id, loc_name, loc_type, building_types)
 
+	'''Displays map that character can go to'''
 	def display_map(self, player_id, curr_loc_name, curr_loc_type, curr_building_types):
 		player_locations = locationInst.map(player_id)
 
@@ -175,31 +174,40 @@ class Options:
 		except ValueError:
 			self.location_options(player_id, curr_loc_name, curr_loc_type, curr_building_types)
 
-
+	'''Displays quest log for character'''
 	def display_quest_log(self, player_id, loc_name, loc_type, building_types):
 		quests = characterInst.fetch_quests(player_id)
-		charName = characterInst.get_char_name(player_id)
 		location_id = locationInst.get_location_id(loc_name)
-		print("Select Quest From Inventory by ID: (Type 'C' to Cancel) \n")
-		i = 0
+		print("Choose Quest From Quest Log by ID: (Type 'C' to Cancel) \n")
 		table = []
 
-		for item in quests:
-			table.append([item['quest_id'],
-							item['description'],
-							item['reward']])
+		for index, item in enumerate(quests):
+			finished = ""
+			if int(item['finished']) == 1:
+				finished = "yes"
+
+			table.append([(index+1), item['description'], item['reward'], finished])
 		print (tabulate(table, headers=['ID',
-			'Description',
-			'Reward']))
+										'Description',
+										'Reward',
+										'Completed?'
+										]))
 
 		choice = input("Select: ")
-		if choice == 'C':
+		try:
+			choice_id = int(choice)
+			if choice_id <= len(quests):
+				quest_id = quests[choice_id - 1]['quest_id']
+				questInst = Quest.Quest()
+				questInst.initiate_quest(quest_id, player_id, location_id)
+			else:
+				print("Oops, that's not a quest you have!")
+				self.display_quest_log(player_id, loc_name, loc_type, building_types)
+		except ValueError:
 			self.location_options(player_id, loc_name, loc_type, building_types)
-		else:
-			questInst = Quest.Quest()
-			quest_id = int(choice)
-			questInst.initiate_quest(quest_id, player_id, location_id)
 
+
+	'''Displays inventory for character'''
 	def display_char_inventory(self, player_id, loc_name, loc_type, building_types):
 		characterInst = Character()
 		loot = characterInst.fetch_loot(player_id)
@@ -220,7 +228,7 @@ class Options:
 										'Item Description',
 										'Equipped']))
 		choice = input("Select: ")
-		if choice == 'C':
+		if choice == 'C' or choice == 'c':
 			self.location_options(player_id, loc_name, loc_type, building_types)
 		elif choice == 'equip' or choice == 'Equip':
 			while(True):
